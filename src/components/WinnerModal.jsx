@@ -1,157 +1,164 @@
 import React, { useEffect, useState } from "react";
 import confetti from "canvas-confetti";
 
-export default function WinnerModal({ winner = [], onReset }) {
-  const [animateWinner, setAnimateWinner] = useState(false);
+export default function WinnerModal({ onReset, allPhotos = [], numberOfWinners = 1 }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [shuffledPhotos, setShuffledPhotos] = useState([]);
+  const [showWinner, setShowWinner] = useState(false);
+  const [winners, setWinners] = useState([]);
 
   useEffect(() => {
-    const audio = new Audio("/sounds/applause.mp3");
-    audio.play();
+  if (!allPhotos || allPhotos.length === 0) return;
 
-    setTimeout(() => {
-      setAnimateWinner(true);
+  const shuffled = [...allPhotos].sort(() => Math.random() - 0.5);
+  setShuffledPhotos(shuffled);
 
-      const duration = 5000;
-      const animationEnd = Date.now() + duration;
-      const defaults = {
-        startVelocity: 35,
-        spread: 120,
-        ticks: 80,
-        gravity: 0.7,
-        scalar: 1.3,
-        zIndex: 1500,
-        colors: ["#ff5f6d", "#ffc371", "#00f5d4", "#9b5de5", "#f15bb5"],
-      };
+  const duration = 4000;
+  const startTime = Date.now();
 
-      function randomInRange(min, max) {
-        return Math.random() * (max - min) + min;
-      }
+  const interval = setInterval(() => {
+    const elapsed = Date.now() - startTime;
 
-      const interval = setInterval(() => {
-        const timeLeft = animationEnd - Date.now();
-        if (timeLeft <= 0) return clearInterval(interval);
+    if (elapsed >= duration) {
+      clearInterval(interval);
 
-        const particleCount = 60 * (timeLeft / duration);
-        confetti({
-          ...defaults,
-          particleCount,
-          origin: { x: randomInRange(0.15, 0.25), y: Math.random() - 0.2 },
-        });
-        confetti({
-          ...defaults,
-          particleCount,
-          origin: { x: randomInRange(0.75, 0.85), y: Math.random() - 0.2 },
-        });
-      }, 250);
-    }, 400);
-  }, []);
+      // Pick winners after shuffle
+      const selectedWinners = [...allPhotos]
+        .sort(() => Math.random() - 0.5)
+        .slice(0, numberOfWinners);
+
+      setWinners(selectedWinners);
+      setShowWinner(true);
+      launchConfetti();
+      return;
+    }
+
+    setCurrentIndex(prev => (prev + 1) % shuffled.length);
+  }, 50);
+
+  return () => clearInterval(interval);
+}, [allPhotos, numberOfWinners]);
+
+
+  const launchConfetti = () => {
+    const duration = 6000;
+    const animationEnd = Date.now() + duration;
+    const defaults = {
+      startVelocity: 35,
+      spread: 120,
+      ticks: 80,
+      gravity: 0.7,
+      scalar: 1.3,
+      zIndex: 1500,
+      colors: ["#ff5f6d", "#ffc371", "#00f5d4", "#9b5de5", "#f15bb5"],
+    };
+
+    const interval = setInterval(() => {
+      const timeLeft = animationEnd - Date.now();
+      if (timeLeft <= 0) return clearInterval(interval);
+
+      const particleCount = 60 * (timeLeft / duration);
+      confetti({ ...defaults, particleCount, origin: { x: Math.random() * 0.5, y: Math.random() - 0.2 } });
+      confetti({ ...defaults, particleCount, origin: { x: 0.5 + Math.random() * 0.5, y: Math.random() - 0.2 } });
+    }, 250);
+  };
+
+  // Display the current shuffling image or all winners
+const displayPhotos = showWinner 
+  ? winners 
+  : shuffledPhotos.length > 0 
+    ? [shuffledPhotos[currentIndex]] 
+    : [];
+
+if (!displayPhotos.length) return null;
+
+
 
   return (
     <div
       style={{
         position: "fixed",
         inset: 0,
-        background:
-          "radial-gradient(circle, rgba(0,0,0,0.92) 0%, rgba(25,25,25,0.9) 100%)",
+        background: "rgba(0,0,0,0.4)", // 40% overlay
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
         color: "#fff",
         zIndex: 1000,
-        overflowY: "auto",
         padding: "20px",
       }}
     >
-      {/* Title */}
       <h1
         style={{
-          fontSize: animateWinner ? "clamp(2rem, 6vw, 4rem)" : "0rem",
-          opacity: animateWinner ? 1 : 0,
-          transition: "all 1s ease-out",
+          fontSize: "clamp(2rem, 6vw, 4rem)",
           color: "#ff1744",
           textShadow: "0 0 25px black, 0 0 60px black",
           textAlign: "center",
-          marginBottom: "1.5rem",
-          textTransform:'uppercase'
+          marginBottom: "2rem",
+          textTransform: "uppercase",
         }}
       >
-         Congratulations! 
+        {showWinner ? "Congratulations!" : "Selecting a winner"}
       </h1>
 
-      {/* Winners Grid */}
       <div
         style={{
           display: "flex",
+          gap: "20px",
           flexWrap: "wrap",
           justifyContent: "center",
-          gap: "1.5rem",
-          width: "100%",
-          maxWidth: "1200px",
+          alignItems: "center",
         }}
       >
-        {winner.map((w, i) => (
+        {displayPhotos.map((photo, idx) => (
           <div
-            key={i}
+            key={idx}
             style={{
-              flex: "1 1 250px",
-              maxWidth: "min(90vw, 320px)",
-              aspectRatio: "1240 / 1844",
-              textAlign: "center",
+              width: "300px",
+              maxWidth: "90vw",
+              height: "400px",
+              position: "relative",
+              borderRadius: "20px",
+              overflow: "hidden",
+              border: "3px solid #fff",
+              boxShadow: "0 0 25px white, 0 0 60px white",
             }}
           >
             <img
-              src={w.url}
-              alt={w.name}
+              src={photo.url}
+              alt={photo.name}
               style={{
                 width: "100%",
-                height: "auto",
-                aspectRatio: "1240 / 1844",
-                borderRadius: "20px",
-                border: "3px solid #ff1744",
-                boxShadow: "0 0 25px white, 0 0 60px white",
+                height: "100%",
                 objectFit: "cover",
-                transition: "all 1s ease-out",
-                transform: animateWinner ? "scale(1)" : "scale(0)",
-                opacity: animateWinner ? 1 : 0,
+                transition: "transform 0.3s ease",
+                transform: showWinner ? "scale(1.2)" : "scale(1)",
               }}
             />
-            <div
-              style={{
-                marginTop: "12px",
-                color: "#fff",
-                fontWeight: "bold",
-                fontSize: "clamp(1rem, 2.5vw, 1.3rem)",
-                wordBreak: "break-word",
-              }}
-            >
-               {w.name.replace(/\.[^/.]+$/, "")} {/* removes file extension */}
-            </div>
           </div>
         ))}
       </div>
 
-      {/* Button */}
-      <button
-        onClick={onReset}
-        style={{
-          marginTop: "35px",
-          padding: "14px 32px",
-          background: "#111",
-          color: "#fff",
-          borderRadius: "12px",
-          cursor: "pointer",
-          fontSize: "clamp(1rem, 2.5vw, 1.2rem)",
-          fontWeight: "bold",
-          border: "2px solid #000",
-          boxShadow: "0 0 20px rgba(255, 23, 68, 0.5)",
-          transition: "all 0.3s ease",
-        }}
-       
-        onMouseLeave={(e) => (e.target.style.background = "#111")}
-      >
-        Pick Again
-      </button>
+      {showWinner && (
+        <button
+          onClick={onReset}
+          style={{
+            marginTop: "30px",
+            padding: "14px 32px",
+            background: "#111",
+            color: "#fff",
+            borderRadius: "12px",
+            cursor: "pointer",
+            fontSize: "clamp(1rem, 2.5vw, 1.2rem)",
+            fontWeight: "bold",
+            border: "2px solid #000",
+            boxShadow: "0 0 20px rgba(255, 23, 68, 0.5)",
+          }}
+        >
+          Pick Again
+        </button>
+      )}
     </div>
   );
 }

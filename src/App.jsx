@@ -6,28 +6,25 @@ import "./index.css";
 
 export default function App() {
   const [photos, setPhotos] = useState([]);
-  const [isShuffling, setIsShuffling] = useState(false);
   const [logos, setLogos] = useState({ logo1: null, logo2: null });
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [title, setTitle] = useState("My Giveaway Event");
   const [bgColor, setBgColor] = useState("#111");
   const [defaultWinners, setDefaultWinners] = useState(1);
 
-  const preloadImages = (urls) => urls.forEach((url) => new Image().src = url);
+  const [showWinners, setShowWinners] = useState(false);
 
   const handlePhotoUpload = (e) => {
-  const files = Array.from(e.target.files).filter(f => f.type.startsWith("image/"));
-  if (!files.length) return;
+    const files = Array.from(e.target.files).filter(f => f.type.startsWith("image/"));
+    if (!files.length) return;
 
-  // store both URL and filename
-  const newPhotos = files.map(f => ({
-    url: URL.createObjectURL(f),
-    name: f.name
-  }));
+    const newPhotos = files.map(f => ({
+      url: URL.createObjectURL(f),
+      name: f.name
+    }));
 
-  setPhotos(prev => [...prev, ...newPhotos]);
-};
-
+    setPhotos(prev => [...prev, ...newPhotos]);
+  };
 
   const handleLogoUpload = (e, key) => {
     const file = e.target.files[0];
@@ -36,38 +33,17 @@ export default function App() {
 
   const enterFullscreen = () => setIsFullscreen(true);
 
-  const [winners, setWinners] = useState([]);
-  const [showWinners, setShowWinners] = useState(false);
-
-  // Pick multiple winners
   const pickWinner = () => {
-  setIsShuffling(true);
-  setWinners([]);
-  setShowWinners(false);
-
-  setTimeout(() => {
-    setIsShuffling(false);
-
-    const shuffled = [...photos].sort(() => Math.random() - 0.5);
-    const selectedWinners = shuffled.slice(0, Math.min(defaultWinners, photos.length));
-    setWinners(selectedWinners); // trigger pop-out in PhotoGrid
-  }, 2000);
-};
-
-  // After winner animation ends
-  const handleWinnerAnimationEnd = () => {
-    setShowWinners(true); // show WinnerModal
+    setShowWinners(true); // directly open the modal
   };
 
   const reset = () => {
-    setWinners([]);
     setShowWinners(false);
   };
 
   return (
     <div style={{ backgroundColor: bgColor, minHeight: "100vh" }}>
       <Header logos={logos} handleLogoUpload={handleLogoUpload} title={title} />
-
 
       {!isFullscreen && (
         <div style={{ maxWidth: "500px", margin: "20px auto", padding: "20px", background: "#222", color: "#fff", borderRadius: "12px" }}>
@@ -79,34 +55,24 @@ export default function App() {
         </div>
       )}
 
-     
+      {photos.length > 0 && <PhotoGrid photos={photos} />}
 
-      {photos.length > 0 && (
-        <PhotoGrid
-  photos={photos} // now each photo is {url, name}
-  isShuffling={isShuffling}
-  winner={winners}
-  onWinnerAnimationEnd={handleWinnerAnimationEnd}
-/>
-
-      )}
-       {isFullscreen && (
+      {isFullscreen && (
         <div style={{ textAlign: "center", margin: "20px 0" }}>
           <input type="file" accept="image/*" multiple id="photo-upload" style={{ display: "none" }} onChange={handlePhotoUpload} />
-         {!isShuffling && (
-           <label htmlFor="photo-upload" style={{ padding: "12px 24px", background: "grey", color: "#000", borderRadius: "8px", cursor: "pointer", marginRight: "10px" }}>
+          <label htmlFor="photo-upload" style={{ padding: "12px 24px", background: "grey", color: "#000", borderRadius: "8px", cursor: "pointer", marginRight: "10px" }}>
             {photos.length ? "Upload More Photos" : "Upload Photos"}
           </label>
-         )}
-       
-          {photos.length > 0 && winners.length === 0 && !isShuffling &&
-            <button onClick={pickWinner} style={{ padding: "12px 24px", background: "white", color: "#000", borderRadius: "8px" }}>Pick Winner(s)</button>
+
+          {photos.length > 0 &&
+            <button onClick={pickWinner} style={{ padding: "12px 24px", background: "white", color: "#000", borderRadius: "8px" }}>
+              Pick Winner(s)
+            </button>
           }
         </div>
       )}
-      {showWinners && winners.length > 0 && (
-        <WinnerModal winner={winners} onReset={reset} />
-      )}
+
+      {showWinners && <WinnerModal allPhotos={photos} numberOfWinners={defaultWinners} onReset={reset} />}
     </div>
   );
 }
