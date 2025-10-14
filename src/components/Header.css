@@ -1,0 +1,71 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 15px 40px;
+  margin-top: 15px;
+  box-sizing: border-box;
+  flex-wrap: nowrap;
+}
+
+.logo-container {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.header-logo {
+ height: clamp(80px, 10vw, 130px);
+       /* ✅ Larger on desktop */
+  width: auto;
+  max-width: 180px;
+  margin-top: 10px;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.header-logo:hover {
+  transform: scale(1.08); /* small hover effect */
+}
+
+.header-title {
+  flex: 1;
+  text-align: center;
+  font-family: 'Open Sans', Regular;
+  font-size: clamp(2rem, 4vw, 3rem); /* slightly larger title */
+  font-weight: 700;
+  color: white;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6);
+  margin: 0;
+  text-transform: uppercase;
+}
+
+/* File input wrappers */
+.file-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ✅ Mobile and tablet responsiveness */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px 20px;
+  }
+
+  .header-logo {
+    height: 60px;      /* smaller logo on mobile */
+    max-width: 100px;
+  }
+
+  .header-title {
+    font-size: 1.8rem;
+    order: -1; /* show title above logos on mobile */
+  }
+}

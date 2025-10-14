@@ -1,0 +1,243 @@
+body, html, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: 'Arial', sans-serif;
+  background: #111;
+  color: #fff;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* ✅ allows natural growth */
+  width: 100%;
+  overflow-x: hidden; /* ✅ only hide horizontal scroll */
+  overflow-y: auto;   /* ✅ allow vertical scroll */
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.header {
+  display: flex;
+  margin-top: 1%;
+  justify-content: space-between; /* logos on sides, title centered */
+  align-items: center;
+  flex-wrap: nowrap;
+  width: 100%; /* full width inside container padding */
+  box-sizing: border-box; /* ensures padding doesn't break layout */
+}
+
+
+.header-logo {
+  height: 80px;         /* default for desktop */
+  width: auto;
+  flex-shrink: 0;
+  margin-top: 15px;
+  max-width: 100%;      /* ensures logo never overflows container */
+}
+
+
+.header-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(1.2rem, 5vw, 2rem); /* min 1.2rem, max 2rem, scales with viewport */
+  font-weight: 700;
+  text-align: center;
+  flex: 1;
+  margin-top: 15px;
+  color: #fff;
+  text-shadow: 2px 2px 5px #000;
+}
+
+
+
+.file-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.winner-count {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px 0;
+  gap: 10px;
+}
+
+.select-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.2rem;
+}
+
+.select-row input {
+  width: 60px;
+  padding: 5px;
+  font-size: 1rem;
+  text-align: center;
+}
+
+button {
+  padding: 12px 24px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  border-radius: 12px;
+  background: gold;
+  color: #000;
+  box-shadow: 0 0 20px rgba(255,215,0,0.7);
+  transition: transform 0.2s;
+}
+
+button:disabled {
+  background: #aaa;
+  cursor: not-allowed;
+}
+
+button:hover:not(:disabled) {
+  transform: scale(1.1);
+}
+
+.grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); /* smaller min size */
+  gap: 10px;
+  padding: 10px;
+  overflow-y: auto;
+  justify-items: center;
+}
+
+.grid-photo {
+  width: 100%;
+  aspect-ratio: 1/1;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 2px solid #fff;
+  transition: transform 0.3s;
+}
+
+.grid-photo:hover {
+  transform: scale(1.05);
+}
+@media (max-width: 480px) {
+  .header-logo {
+    height: 50px;       /* smaller height for mobile */
+    margin-top: 10px;   /* adjust spacing */
+  }
+
+  .header-title {
+    font-size: 1.5rem;  /* scale down title */
+  }
+
+
+
+  .grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 10px;
+
+  /* ✅ Add equal horizontal margins and proper centering */
+  padding: 10px 20px;
+  margin: 0 auto;
+  box-sizing: border-box;
+
+  /* ✅ Keep consistent layout */
+  width: 100%;
+  max-width: 1600px; /* optional — keeps it centered on large screens */
+  overflow-y: auto;
+  justify-items: stretch;
+}
+
+
+  .grid-photo {
+    border-radius: 8px;
+  }
+
+  .winner-modal img {
+    width: 180px !important;
+    height: 180px !important;
+  }
+
+  button {
+    font-size: 1rem;
+    padding: 10px 20px;
+  }
+  @keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+/* Container for the settings panel */
+/* Settings Panel */
+.settings-panel {
+  width: 90%;
+  max-width: 500px;
+  margin: 5vw auto;
+  padding: 5vw;
+  background: #222;
+  color: #fff;
+  border-radius: 12px;
+  box-sizing: border-box;
+}
+
+.settings-panel h2 {
+  font-size: 6vw;
+  margin-bottom: 4vw;
+  text-align: center;
+}
+
+.settings-panel input[type="text"],
+.settings-panel input[type="number"],
+.settings-panel input[type="color"] {
+  width: 100%;
+  margin-bottom: 4vw;
+  padding: 3vw;
+  font-size: 4vw;
+  border-radius: 8px;
+  border: none;
+  box-sizing: border-box;
+}
+
+.settings-panel button {
+  width: 100%;
+  padding: 4vw;
+  font-size: 4vw;
+  border-radius: 8px;
+  border: none;
+  background: gold;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.settings-panel button:hover {
+  background: #ffc107;
+}
+
+/* Tablet / Desktop */
+@media (min-width: 768px) {
+  .settings-panel {
+    padding: 2rem;
+  }
+  .settings-panel h2 {
+    font-size: 1.5rem;
+  }
+  .settings-panel input[type="text"],
+  .settings-panel input[type="number"],
+  .settings-panel input[type="color"] {
+    font-size: 1rem;
+    padding: 0.8rem;
+  }
+  .settings-panel button {
+    font-size: 1rem;
+    padding: 0.8rem;
+  }
+}
+
+}
