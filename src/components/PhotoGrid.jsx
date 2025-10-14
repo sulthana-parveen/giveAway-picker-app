@@ -1,16 +1,14 @@
 import React, { useEffect, useState, useRef } from "react";
 import "./PhotoGrid.css";
 
-export default function PhotoGrid({ photos = [], winner = [], onWinnerAnimationEnd }) {
-  const [gridConfig, setGridConfig] = useState({ rows: 1, cols: 1, tileSize: 100 });
+export default function PhotoGrid({ photos = [] }) {
   const gridRef = useRef(null);
   const aspectRatio = 1240 / 1844; // image width/height
   const gap = 10;
 
-  // Compute optimal rows, cols, and tile size to fit viewport
-  const computeGrid = () => {
-    const count = photos.length;
-    if (count === 0) return;
+  // Compute optimal grid for given count and window size
+  const computeGrid = (count) => {
+    if (count === 0) return { rows: 1, cols: 1, tileSize: 100 };
 
     const containerW = window.innerWidth - gap * 2;
     const containerH = window.innerHeight - gap * 2;
@@ -27,13 +25,19 @@ export default function PhotoGrid({ photos = [], winner = [], onWinnerAnimationE
       if (area > best.area) best = { rows, cols, tileSize: tileH, area };
     }
 
-    setGridConfig(best);
+    return best;
   };
 
+  // Initialize gridConfig based on initial photos length
+  const [gridConfig, setGridConfig] = useState(() => computeGrid(photos.length));
+
   useEffect(() => {
-    computeGrid();
-    window.addEventListener("resize", computeGrid);
-    return () => window.removeEventListener("resize", computeGrid);
+    // Recompute grid whenever photos length changes
+    setGridConfig(computeGrid(photos.length));
+
+    const handleResize = () => setGridConfig(computeGrid(photos.length));
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, [photos.length]);
 
   return (
