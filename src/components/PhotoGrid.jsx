@@ -15,8 +15,11 @@ export default function PhotoGrid({ photos = [], isShuffling = false, winner = [
     const count = photos.length;
     if (count === 0) return;
 
-    const containerW = window.innerWidth - gap * 2;
-    const containerH = window.innerHeight - gap * 2;
+  const wrapper = gridRef.current?.parentElement;
+const containerW = (wrapper?.clientWidth || window.innerWidth) - gap * 4;
+const containerH = (wrapper?.clientHeight || window.innerHeight) - gap * 4;
+
+
 
      let best = { rows: 1, cols: count, tileSize: 100, area: 0 };
 
@@ -124,16 +127,16 @@ export default function PhotoGrid({ photos = [], isShuffling = false, winner = [
         className="photo-grid-container"
         ref={gridRef}
         style={{
-         display: "grid",
-          gridTemplateColumns: `repeat(${gridConfig.cols}, ${gridConfig.tileSize * aspectRatio}px)`,
-          gridTemplateRows: `repeat(${gridConfig.rows}, ${gridConfig.tileSize}px)`,
-          gap: `${gap}px`,
-          justifyContent: "center",
-          alignContent: "center",
-          width: "100vw",
-          height: "100vh",
-          padding: `${gap}px`,
-          boxSizing: "border-box",
+          display: "grid",
+    gridTemplateColumns: `repeat(${gridConfig.cols}, ${gridConfig.tileSize * aspectRatio}px)`,
+    gridTemplateRows: `repeat(${gridConfig.rows}, ${gridConfig.tileSize}px)`,
+    gap: `${gap}px`,
+    justifyContent: "center",
+    alignContent: "center",
+    width: "100%",         // ✅ fix: respects wrapper padding
+    height: "100%",        // ✅ optional: matches wrapper height
+   
+    boxSizing: "border-box",
         }}
       >
         {shuffledPhotos.map((photo, index) => {
