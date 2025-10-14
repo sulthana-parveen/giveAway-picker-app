@@ -125,7 +125,7 @@ export default function WinnerModal({ winner = [], onReset }) {
                 wordBreak: "break-word",
               }}
             >
-              {w.name}
+               {w.name.replace(/\.[^/.]+$/, "")} {/* removes file extension */}
             </div>
           </div>
         ))}
