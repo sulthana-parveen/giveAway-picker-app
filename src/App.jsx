@@ -55,7 +55,7 @@ export default function App() {
         </div>
       )}
 
-      {photos.length > 0 && <PhotoGrid photos={photos} />}
+      {photos.length > 0 && <PhotoGrid photos={photos} headerHeight={80} footerHeight={50} />}
 
       {isFullscreen && (
         <div style={{ textAlign: "center", margin: "20px 0" }}>

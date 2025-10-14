@@ -1,17 +1,17 @@
 import React, { useEffect, useState, useRef } from "react";
 import "./PhotoGrid.css";
 
-export default function PhotoGrid({ photos = [] }) {
+export default function PhotoGrid({ photos = [], headerHeight = 80, footerHeight = 0 }) {
   const gridRef = useRef(null);
   const aspectRatio = 1240 / 1844; // image width/height
   const gap = 10;
 
-  // Compute optimal grid for given count and window size
+  // Compute optimal grid for given count and available window space
   const computeGrid = (count) => {
     if (count === 0) return { rows: 1, cols: 1, tileSize: 100 };
 
     const containerW = window.innerWidth - gap * 2;
-    const containerH = window.innerHeight - gap * 2;
+    const containerH = window.innerHeight - gap * 2 - headerHeight - footerHeight;
 
     let best = { rows: 1, cols: count, tileSize: 100, area: 0 };
 
@@ -32,13 +32,13 @@ export default function PhotoGrid({ photos = [] }) {
   const [gridConfig, setGridConfig] = useState(() => computeGrid(photos.length));
 
   useEffect(() => {
-    // Recompute grid whenever photos length changes
+    // Recompute grid whenever photos length or window resizes
+    const handleResize = () => setGridConfig(computeGrid(photos.length));
     setGridConfig(computeGrid(photos.length));
 
-    const handleResize = () => setGridConfig(computeGrid(photos.length));
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [photos.length]);
+  }, [photos.length, headerHeight, footerHeight]);
 
   return (
     <div className="grid-wrapper">
@@ -53,7 +53,7 @@ export default function PhotoGrid({ photos = [] }) {
           justifyContent: "center",
           alignContent: "center",
           width: "100vw",
-          height: "100vh",
+          height: window.innerHeight - headerHeight - footerHeight,
           padding: `${gap}px`,
           boxSizing: "border-box",
         }}
@@ -77,7 +77,6 @@ export default function PhotoGrid({ photos = [] }) {
               style={{
                 width: "100%",
                 height: "100%",
-                borderRadius: 0,
                 objectFit: "contain",
               }}
             />
