@@ -2,21 +2,26 @@ import React, { useEffect, useState, useRef } from "react";
 import confetti from "canvas-confetti";
 
 export default function WinnerModal({ onReset, allPhotos = [], numberOfWinners = 1 }) {
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [shuffledPhotos, setShuffledPhotos] = useState([]);
   const [showWinner, setShowWinner] = useState(false);
   const [winners, setWinners] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0); // current image in the slot
+  const [slotImages, setSlotImages] = useState([]); // the 3 images to shuffle in slot
 
-  // 🎵 Ref for winner sound
   const audioRef = useRef(null);
 
   useEffect(() => {
     if (!allPhotos || allPhotos.length === 0) return;
 
+    // Shuffle all photos
     const shuffled = [...allPhotos].sort(() => Math.random() - 0.5);
     setShuffledPhotos(shuffled);
 
-    const duration = 25000;
+    // Pick 3 photos for the single slot shuffle
+    const slotSelection = shuffled.slice(0, 3);
+    setSlotImages(slotSelection);
+
+    const duration = 10000; // total shuffle duration
     const startTime = Date.now();
 
     const interval = setInterval(() => {
@@ -25,6 +30,7 @@ export default function WinnerModal({ onReset, allPhotos = [], numberOfWinners =
       if (elapsed >= duration) {
         clearInterval(interval);
 
+        // pick winners
         const selectedWinners = [...allPhotos]
           .sort(() => Math.random() - 0.5)
           .slice(0, numberOfWinners);
@@ -32,12 +38,13 @@ export default function WinnerModal({ onReset, allPhotos = [], numberOfWinners =
         setWinners(selectedWinners);
         setShowWinner(true);
         launchConfetti();
-        playWinnerSound(); // 🎵 play sound when winner is announced
+        playWinnerSound();
         return;
       }
 
-      setCurrentIndex((prev) => (prev + 1) % shuffled.length);
-    }, 50);
+      // move to next image in slot
+      setCurrentIndex((prev) => (prev + 1) % slotSelection.length);
+    }, 1000);
 
     return () => clearInterval(interval);
   }, [allPhotos, numberOfWinners]);
@@ -60,20 +67,11 @@ export default function WinnerModal({ onReset, allPhotos = [], numberOfWinners =
       if (timeLeft <= 0) return clearInterval(interval);
 
       const particleCount = 60 * (timeLeft / duration);
-      confetti({
-        ...defaults,
-        particleCount,
-        origin: { x: Math.random() * 0.5, y: Math.random() - 0.2 },
-      });
-      confetti({
-        ...defaults,
-        particleCount,
-        origin: { x: 0.5 + Math.random() * 0.5, y: Math.random() - 0.2 },
-      });
+      confetti({ ...defaults, particleCount, origin: { x: Math.random() * 0.5, y: Math.random() - 0.2 } });
+      confetti({ ...defaults, particleCount, origin: { x: 0.5 + Math.random() * 0.5, y: Math.random() - 0.2 } });
     }, 250);
   };
 
-  // 🎵 Play winner sound effect
   const playWinnerSound = () => {
     if (audioRef.current) {
       audioRef.current.currentTime = 0;
@@ -81,11 +79,7 @@ export default function WinnerModal({ onReset, allPhotos = [], numberOfWinners =
     }
   };
 
-  const displayPhotos = showWinner
-    ? winners
-    : shuffledPhotos.length > 0
-    ? [shuffledPhotos[currentIndex]]
-    : [];
+  const displayPhotos = showWinner ? winners : [slotImages[currentIndex]].filter(Boolean);
 
   if (!displayPhotos.length) return null;
 
@@ -106,12 +100,7 @@ export default function WinnerModal({ onReset, allPhotos = [], numberOfWinners =
         padding: "20px",
       }}
     >
-      {/* 🎵 hidden audio tag */}
-      <audio
-        ref={audioRef}
-        src="/sounds/applause.mp3" // 👉 Place your sound file in public/sounds/
-        preload="auto"
-      />
+      <audio ref={audioRef} src="/sounds/applause.mp3" preload="auto" />
 
       <h1
         style={{
@@ -136,24 +125,14 @@ export default function WinnerModal({ onReset, allPhotos = [], numberOfWinners =
         }}
       >
         {displayPhotos.map((photo, idx) => (
-          <div
-            key={idx}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
+          <div key={idx} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
             <div
               style={{
                 width: "300px",
                 maxWidth: "90vw",
                 height: "400px",
                 position: "relative",
-               
                 overflow: "hidden",
-              
                 boxShadow: "0 0 25px white, 0 0 60px white",
               }}
             >
@@ -169,7 +148,6 @@ export default function WinnerModal({ onReset, allPhotos = [], numberOfWinners =
                 }}
               />
             </div>
-
             {showWinner && (
               <div
                 style={{
@@ -182,7 +160,7 @@ export default function WinnerModal({ onReset, allPhotos = [], numberOfWinners =
                   textTransform: "capitalize",
                 }}
               >
-                {removeExtension(photo.name)}
+               
               </div>
             )}
           </div>
