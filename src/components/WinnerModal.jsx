@@ -16,7 +16,7 @@ export default function WinnerModal({ onReset, allPhotos = [], numberOfWinners =
     const shuffled = [...allPhotos].sort(() => Math.random() - 0.5);
     setShuffledPhotos(shuffled);
 
-    const duration = 17000;
+    const duration = 25000;
     const startTime = Date.now();
 
     const interval = setInterval(() => {
@@ -123,7 +123,7 @@ export default function WinnerModal({ onReset, allPhotos = [], numberOfWinners =
           textTransform: "uppercase",
         }}
       >
-        {showWinner ? "Congratulations!" : "Selecting a winner"}
+        {showWinner ? "!!مبرووووك " : "اختيار كابتن التصفير"}
       </h1>
 
       <div
