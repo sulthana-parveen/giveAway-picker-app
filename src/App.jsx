@@ -26,9 +26,7 @@ export default function App() {
     setPhotos(prev => [...prev, ...newPhotos]);
 
     // Enter fullscreen after upload
-    setTimeout(() => {
-      enterFullscreen();
-    }, 100);
+    setTimeout(() => enterFullscreen(), 100);
   };
 
   // Upload logos
@@ -40,31 +38,20 @@ export default function App() {
   // Fullscreen function
   const enterFullscreen = () => {
     const elem = document.documentElement;
-    if (elem.requestFullscreen) {
-      elem.requestFullscreen();
-    } else if (elem.mozRequestFullScreen) {
-      elem.mozRequestFullScreen();
-    } else if (elem.webkitRequestFullscreen) {
-      elem.webkitRequestFullscreen();
-    } else if (elem.msRequestFullscreen) {
-      elem.msRequestFullscreen();
-    }
+    if (elem.requestFullscreen) elem.requestFullscreen();
+    else if (elem.mozRequestFullScreen) elem.mozRequestFullScreen();
+    else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+    else if (elem.msRequestFullscreen) elem.msRequestFullscreen();
+
     setIsFullscreen(true);
   };
 
   // Pick winners
-  const pickWinner = () => {
-    setShowWinners(true);
-  };
-
-  // Reset winners modal
-  const reset = () => {
-    setShowWinners(false);
-  };
+  const pickWinner = () => setShowWinners(true);
 
   return (
     <div style={{ backgroundColor: bgColor, minHeight: "100vh" }}>
-      {/* Normal (non-fullscreen) settings */}
+      {/* Settings Panel */}
       {!isFullscreen && (
         <div
           style={{
@@ -103,7 +90,7 @@ export default function App() {
         <PhotoGrid photos={photos} headerHeight={80} footerHeight={50} />
       )}
 
-      {/* Fullscreen layout */}
+      {/* Fullscreen Layout */}
       {isFullscreen && (
         <div
           style={{
@@ -169,24 +156,23 @@ export default function App() {
           </div>
 
           {/* PhotoGrid */}
-          <div
-            style={{
-             flex: 1,
-              padding: "10px",
-              borderRadius: "8px",
-            }}
-          >
+          <div style={{ flex: 1, padding: "10px", borderRadius: "8px" }}>
             {photos.length > 0 && <PhotoGrid photos={photos} />}
           </div>
         </div>
       )}
 
-      {/* Winner modal */}
+      {/* Winner Modal */}
       {showWinners && (
         <WinnerModal
           allPhotos={photos}
           numberOfWinners={defaultWinners}
-          onReset={reset}
+          onReset={(winners) => {
+            setShowWinners(false);
+            setTimeout(() => {
+              setPhotos(prev => prev.filter(p => !winners.some(w => w.name === p.name)));
+            }, 100);
+          }}
         />
       )}
     </div>
