@@ -37,9 +37,9 @@
   aspect-ratio: 1240 / 1844;
   object-fit: contain;
   border: none;
+  border-radius: 0 !important;
   background-color: black;
   transition: transform 0.2s ease, opacity 0.2s ease;
-  /* border-radius removed */
 }
 
 /* Fade + pop-out for shuffle */

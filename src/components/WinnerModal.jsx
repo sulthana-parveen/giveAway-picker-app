@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import confetti from "canvas-confetti";
 
 export default function WinnerModal({ onReset, allPhotos = [], numberOfWinners = 1 }) {
@@ -7,38 +7,40 @@ export default function WinnerModal({ onReset, allPhotos = [], numberOfWinners =
   const [showWinner, setShowWinner] = useState(false);
   const [winners, setWinners] = useState([]);
 
+  // 🎵 Ref for winner sound
+  const audioRef = useRef(null);
+
   useEffect(() => {
-  if (!allPhotos || allPhotos.length === 0) return;
+    if (!allPhotos || allPhotos.length === 0) return;
 
-  const shuffled = [...allPhotos].sort(() => Math.random() - 0.5);
-  setShuffledPhotos(shuffled);
+    const shuffled = [...allPhotos].sort(() => Math.random() - 0.5);
+    setShuffledPhotos(shuffled);
 
-  const duration = 4000;
-  const startTime = Date.now();
+    const duration = 4000;
+    const startTime = Date.now();
 
-  const interval = setInterval(() => {
-    const elapsed = Date.now() - startTime;
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
 
-    if (elapsed >= duration) {
-      clearInterval(interval);
+      if (elapsed >= duration) {
+        clearInterval(interval);
 
-      // Pick winners after shuffle
-      const selectedWinners = [...allPhotos]
-        .sort(() => Math.random() - 0.5)
-        .slice(0, numberOfWinners);
+        const selectedWinners = [...allPhotos]
+          .sort(() => Math.random() - 0.5)
+          .slice(0, numberOfWinners);
 
-      setWinners(selectedWinners);
-      setShowWinner(true);
-      launchConfetti();
-      return;
-    }
+        setWinners(selectedWinners);
+        setShowWinner(true);
+        launchConfetti();
+        playWinnerSound(); // 🎵 play sound when winner is announced
+        return;
+      }
 
-    setCurrentIndex(prev => (prev + 1) % shuffled.length);
-  }, 50);
+      setCurrentIndex((prev) => (prev + 1) % shuffled.length);
+    }, 50);
 
-  return () => clearInterval(interval);
-}, [allPhotos, numberOfWinners]);
-
+    return () => clearInterval(interval);
+  }, [allPhotos, numberOfWinners]);
 
   const launchConfetti = () => {
     const duration = 6000;
@@ -58,28 +60,43 @@ export default function WinnerModal({ onReset, allPhotos = [], numberOfWinners =
       if (timeLeft <= 0) return clearInterval(interval);
 
       const particleCount = 60 * (timeLeft / duration);
-      confetti({ ...defaults, particleCount, origin: { x: Math.random() * 0.5, y: Math.random() - 0.2 } });
-      confetti({ ...defaults, particleCount, origin: { x: 0.5 + Math.random() * 0.5, y: Math.random() - 0.2 } });
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: Math.random() * 0.5, y: Math.random() - 0.2 },
+      });
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: 0.5 + Math.random() * 0.5, y: Math.random() - 0.2 },
+      });
     }, 250);
   };
 
-  // Display the current shuffling image or all winners
-const displayPhotos = showWinner 
-  ? winners 
-  : shuffledPhotos.length > 0 
-    ? [shuffledPhotos[currentIndex]] 
+  // 🎵 Play winner sound effect
+  const playWinnerSound = () => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(() => {});
+    }
+  };
+
+  const displayPhotos = showWinner
+    ? winners
+    : shuffledPhotos.length > 0
+    ? [shuffledPhotos[currentIndex]]
     : [];
 
-if (!displayPhotos.length) return null;
+  if (!displayPhotos.length) return null;
 
-
+  const removeExtension = (name = "") => name.replace(/\.[^/.]+$/, "");
 
   return (
     <div
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(0,0,0,0.4)", // 40% overlay
+        background: "rgba(0,0,0,0.4)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -89,6 +106,13 @@ if (!displayPhotos.length) return null;
         padding: "20px",
       }}
     >
+      {/* 🎵 hidden audio tag */}
+      <audio
+        ref={audioRef}
+        src="/sounds/applause.mp3" // 👉 Place your sound file in public/sounds/
+        preload="auto"
+      />
+
       <h1
         style={{
           fontSize: "clamp(2rem, 6vw, 4rem)",
@@ -105,7 +129,7 @@ if (!displayPhotos.length) return null;
       <div
         style={{
           display: "flex",
-          gap: "20px",
+          gap: "40px",
           flexWrap: "wrap",
           justifyContent: "center",
           alignItems: "center",
@@ -115,27 +139,52 @@ if (!displayPhotos.length) return null;
           <div
             key={idx}
             style={{
-              width: "300px",
-              maxWidth: "90vw",
-              height: "400px",
-              position: "relative",
-              borderRadius: "20px",
-              overflow: "hidden",
-              border: "3px solid #fff",
-              boxShadow: "0 0 25px white, 0 0 60px white",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
-            <img
-              src={photo.url}
-              alt={photo.name}
+            <div
               style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                transition: "transform 0.3s ease",
-                transform: showWinner ? "scale(1.2)" : "scale(1)",
+                width: "300px",
+                maxWidth: "90vw",
+                height: "400px",
+                position: "relative",
+                borderRadius: "20px",
+                overflow: "hidden",
+                border: "3px solid #fff",
+                boxShadow: "0 0 25px white, 0 0 60px white",
               }}
-            />
+            >
+              <img
+                src={photo.url}
+                alt={photo.name}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  transition: "transform 0.3s ease",
+                  transform: showWinner ? "scale(1.2)" : "scale(1)",
+                }}
+              />
+            </div>
+
+            {showWinner && (
+              <div
+                style={{
+                  marginTop: "12px",
+                  fontSize: "1.6rem",
+                  fontWeight: "600",
+                  color: "#fff",
+                  textShadow: "0 0 10px black",
+                  textAlign: "center",
+                  textTransform: "capitalize",
+                }}
+              >
+                {removeExtension(photo.name)}
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -144,7 +193,7 @@ if (!displayPhotos.length) return null;
         <button
           onClick={onReset}
           style={{
-            marginTop: "30px",
+            marginTop: "40px",
             padding: "14px 32px",
             background: "#111",
             color: "#fff",
