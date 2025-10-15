@@ -2,52 +2,52 @@ import React, { useEffect, useState, useRef } from "react";
 import confetti from "canvas-confetti";
 
 export default function WinnerModal({ onReset, allPhotos = [], numberOfWinners = 1 }) {
-  const [shuffledPhotos, setShuffledPhotos] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [showWinner, setShowWinner] = useState(false);
   const [winners, setWinners] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0); // current image in the slot
-  const [slotImages, setSlotImages] = useState([]); // the 3 images to shuffle in slot
-
+  const [shuffledPhotos, setShuffledPhotos] = useState([]);
+  const [allWinners, setAllWinners] = useState([]); // keep track of all previous winners
   const audioRef = useRef(null);
 
   useEffect(() => {
     if (!allPhotos || allPhotos.length === 0) return;
 
-    // Shuffle all photos
+    // Shuffle all images once
     const shuffled = [...allPhotos].sort(() => Math.random() - 0.5);
     setShuffledPhotos(shuffled);
 
-    // Pick 3 photos for the single slot shuffle
-    const slotSelection = shuffled.slice(0, 3);
-    setSlotImages(slotSelection);
-
-    const duration = 10000; // total shuffle duration
-    const startTime = Date.now();
+    const intervalTime = 1000 / 3; // 3 images per second (~0.33s per image)
+    let index = 0;
 
     const interval = setInterval(() => {
-      const elapsed = Date.now() - startTime;
+      setCurrentIndex(index);
+      index++;
 
-      if (elapsed >= duration) {
+      if (index >= shuffled.length) {
         clearInterval(interval);
 
-        // pick winners
-        const selectedWinners = [...allPhotos]
+        // Filter out previous winners
+        const availablePhotos = allPhotos.filter(
+          (photo) => !allWinners.some((w) => w.name === photo.name)
+        );
+
+        // Pick winners
+        const selectedWinners = availablePhotos
           .sort(() => Math.random() - 0.5)
           .slice(0, numberOfWinners);
 
+        // Update states
         setWinners(selectedWinners);
+        setAllWinners((prev) => [...prev, ...selectedWinners]);
         setShowWinner(true);
+
         launchConfetti();
         playWinnerSound();
-        return;
       }
-
-      // move to next image in slot
-      setCurrentIndex((prev) => (prev + 1) % slotSelection.length);
-    }, 1000);
+    }, intervalTime);
 
     return () => clearInterval(interval);
-  }, [allPhotos, numberOfWinners]);
+  }, [allPhotos, numberOfWinners, allWinners]);
 
   const launchConfetti = () => {
     const duration = 6000;
@@ -79,10 +79,9 @@ export default function WinnerModal({ onReset, allPhotos = [], numberOfWinners =
     }
   };
 
-  const displayPhotos = showWinner ? winners : [slotImages[currentIndex]].filter(Boolean);
+  if (!shuffledPhotos.length) return null;
 
-  if (!displayPhotos.length) return null;
-
+  const displayPhoto = showWinner ? winners[0] : shuffledPhotos[currentIndex];
   const removeExtension = (name = "") => name.replace(/\.[^/.]+$/, "");
 
   return (
@@ -117,55 +116,43 @@ export default function WinnerModal({ onReset, allPhotos = [], numberOfWinners =
 
       <div
         style={{
-          display: "flex",
-          gap: "40px",
-          flexWrap: "wrap",
-          justifyContent: "center",
-          alignItems: "center",
+          width: "300px",
+          maxWidth: "90vw",
+          height: "400px",
+          overflow: "hidden",
+          boxShadow: "0 0 25px white, 0 0 60px white",
         }}
       >
-        {displayPhotos.map((photo, idx) => (
-          <div key={idx} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-            <div
-              style={{
-                width: "300px",
-                maxWidth: "90vw",
-                height: "400px",
-                position: "relative",
-                overflow: "hidden",
-                boxShadow: "0 0 25px white, 0 0 60px white",
-              }}
-            >
-              <img
-                src={photo.url}
-                alt={photo.name}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  transition: "transform 0.3s ease",
-                  transform: showWinner ? "scale(1.2)" : "scale(1)",
-                }}
-              />
-            </div>
-            {showWinner && (
-              <div
-                style={{
-                  marginTop: "12px",
-                  fontSize: "1.6rem",
-                  fontWeight: "600",
-                  color: "#fff",
-                  textShadow: "0 0 10px black",
-                  textAlign: "center",
-                  textTransform: "capitalize",
-                }}
-              >
-               
-              </div>
-            )}
-          </div>
-        ))}
+        {displayPhoto && (
+          <img
+            src={displayPhoto.url}
+            alt={displayPhoto.name}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              transition: "transform 0.2s ease",
+              transform: showWinner ? "scale(1.2)" : "scale(1)",
+            }}
+          />
+        )}
       </div>
+
+      {showWinner && (
+        <div
+          style={{
+            marginTop: "12px",
+            fontSize: "1.6rem",
+            fontWeight: "600",
+            color: "#fff",
+            textShadow: "0 0 10px black",
+            textAlign: "center",
+            textTransform: "capitalize",
+          }}
+        >
+         
+        </div>
+      )}
 
       {showWinner && (
         <button
