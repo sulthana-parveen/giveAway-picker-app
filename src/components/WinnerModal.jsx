@@ -16,7 +16,7 @@ export default function WinnerModal({ onReset, allPhotos = [], numberOfWinners =
     const shuffled = [...allPhotos].sort(() => Math.random() - 0.5);
     setShuffledPhotos(shuffled);
 
-    const duration = 4000;
+    const duration = 17000;
     const startTime = Date.now();
 
     const interval = setInterval(() => {
@@ -151,9 +151,9 @@ export default function WinnerModal({ onReset, allPhotos = [], numberOfWinners =
                 maxWidth: "90vw",
                 height: "400px",
                 position: "relative",
-                borderRadius: "20px",
+               
                 overflow: "hidden",
-                border: "3px solid #fff",
+              
                 boxShadow: "0 0 25px white, 0 0 60px white",
               }}
             >

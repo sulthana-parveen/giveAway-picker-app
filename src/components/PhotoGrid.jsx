@@ -1,50 +1,52 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import "./PhotoGrid.css";
 
 export default function PhotoGrid({ photos = [], headerHeight = 80, footerHeight = 0 }) {
-  const gridRef = useRef(null);
-  const aspectRatio = 1240 / 1844; // image width/height
+  const aspectRatio = 1240 / 1844; // width / height
   const gap = 10;
+  const padding = 20;
 
-  // Compute optimal grid for given count and available window space
   const computeGrid = (count) => {
     if (count === 0) return { rows: 1, cols: 1, tileSize: 100 };
 
-    const containerW = window.innerWidth - gap * 2;
-    const containerH = window.innerHeight - gap * 2 - headerHeight - footerHeight;
+    const containerW = window.innerWidth - padding * 2;
+    const containerH = window.innerHeight - headerHeight - footerHeight - padding * 2;
 
     let best = { rows: 1, cols: count, tileSize: 100, area: 0 };
 
     for (let cols = 1; cols <= count; cols++) {
       const rows = Math.ceil(count / cols);
-      const maxTileW = (containerW - (cols - 1) * gap) / cols;
-      const maxTileH = (containerH - (rows - 1) * gap) / rows;
-      let tileH = Math.min(maxTileH, maxTileW / aspectRatio);
-      let tileW = tileH * aspectRatio;
-      const area = tileW * tileH;
+      const totalGapW = (cols - 1) * gap;
+      const totalGapH = (rows - 1) * gap;
+
+      const maxTileW = (containerW - totalGapW) / cols;
+      const maxTileH = (containerH - totalGapH) / rows;
+
+      // limit tile height based on aspect ratio and width
+      const tileH = Math.min(maxTileH, maxTileW / aspectRatio);
+
+      const area = tileH * (tileH * aspectRatio);
       if (area > best.area) best = { rows, cols, tileSize: tileH, area };
     }
 
     return best;
   };
 
-  // Initialize gridConfig based on initial photos length
   const [gridConfig, setGridConfig] = useState(() => computeGrid(photos.length));
 
   useEffect(() => {
-    // Recompute grid whenever photos length or window resizes
     const handleResize = () => setGridConfig(computeGrid(photos.length));
-    setGridConfig(computeGrid(photos.length));
-
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [photos.length, headerHeight, footerHeight]);
+  }, [photos.length]);
 
   return (
-    <div className="grid-wrapper">
+    <div
+      className="grid-wrapper"
+      style={{ padding: `${padding}px`, boxSizing: "border-box" }}
+    >
       <div
         className="photo-grid-container"
-        ref={gridRef}
         style={{
           display: "grid",
           gridTemplateColumns: `repeat(${gridConfig.cols}, ${gridConfig.tileSize * aspectRatio}px)`,
@@ -52,9 +54,7 @@ export default function PhotoGrid({ photos = [], headerHeight = 80, footerHeight
           gap: `${gap}px`,
           justifyContent: "center",
           alignContent: "center",
-          width: "100vw",
-          height: window.innerHeight - headerHeight - footerHeight,
-          padding: `${gap}px`,
+          width: "100%",
           boxSizing: "border-box",
         }}
       >
@@ -66,7 +66,9 @@ export default function PhotoGrid({ photos = [], headerHeight = 80, footerHeight
               width: gridConfig.tileSize * aspectRatio,
               height: gridConfig.tileSize,
               overflow: "hidden",
-              borderRadius: 0,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
               backgroundColor: "#000",
             }}
           >
